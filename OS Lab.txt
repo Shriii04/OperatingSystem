@@ -1,0 +1,915 @@
+﻿1.Array to sort 
+
+
+#!/bin/bash
+arr=(10 8 20 100 12)
+echo "Array in original order"
+echo ${arr[*]}
+for((i=0;i<5;i++))
+do
+    for((j=0;j<5-i-1;j++))
+    do
+        if [ ${arr[j]} -gt ${arr[$((j+1))]} ]
+        then
+            temp=${arr[j]}
+            arr[$j]=${arr[$((j+1))]}  
+            arr[$((j+1))]=$temp
+        fi
+    done
+done
+
+
+echo "Array in sorted order :"
+echo ${arr[*]}
+
+
+Corrected code 
+------------(not getting 13 no soln)
+20. if a number is a palindrome
+
+
+#!/bin/bash
+
+
+echo "Enter a number"
+read num
+
+
+# Storing the remainder
+s=0
+
+
+# Store number in reverse
+# order
+rev=""
+
+
+# Store original number
+# in another variable
+temp=$num
+
+
+while [ $num -gt 0 ]
+do
+        # Get Remainder
+        s=$(( $num % 10 ))
+        
+        # Get next digit
+        num=$(( $num / 10 ))
+        
+        # Store previous number and
+        # current digit in reverse
+        rev=$( echo ${rev}${s} )
+done
+
+
+if [ $temp -eq $rev ];
+then
+        echo "Number is palindrome"
+else
+        echo "Number is NOT palindrome"
+fi
+
+
+
+
+5. Producer consumer using semaphore
+Code:
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdlib.h>
+#define BufferSize 10
+sem_t empty;
+sem_t full;
+int count = 0;
+int buffer[BufferSize];
+void *producer(void *item){
+long int num = (long int)item;
+while (1) {
+int item = rand() % 10;
+sem_wait(&empty);
+buffer[count]=item;
+printf("Producer %ld Produced %d\n", num+1, buffer[count]);
+count++;
+sem_post(&full);
+sleep(1);
+}
+pthread_exit(NULL);
+}
+void *consumer(void *item){
+long int num = (long int)item;
+while (1) {
+sem_wait(&full);
+count--;
+printf("Consumer %ld consumed %d\n", num+1, buffer[count]);
+sem_post(&empty);
+sleep(1);
+}
+pthread_exit(NULL);
+}
+int main()
+{
+pthread_t p[10],c[10];
+sem_init(&empty, 0, BufferSize);
+sem_init(&full, 0, 0);
+unsigned long int i;
+for( i = 0; i < 10; i++) {
+pthread_create(&p[i], NULL, producer, (void *)i);
+}
+for(i = 0; i < 10; i++) {
+pthread_create(&c[i], NULL, consumer, (void *)i);
+}
+for(i = 0; i < 10; i++) {
+pthread_join(p[i], NULL);
+}
+for( i = 0; i < 10; i++) {
+pthread_join(c[i], NULL);
+}
+sem_destroy(&empty);
+sem_destroy(&full);
+return 0;
+}
+
+
+12. Producer consumer using mutex
+Code:
+#include <stdio.h>
+#include <pthread.h>
+#include <stdlib.h>
+#define BufferSize 10
+int count = 0;
+int buffer[BufferSize];
+pthread_mutex_t mutex;
+void *producer(void *item){
+long int num = (long int)item;
+while(1) {
+pthread_mutex_lock(&mutex);
+if (count < BufferSize) {
+buffer[count] = rand() % 10;
+printf(" \n Producer %ld Produced %d\n", num + 1, buffer[count]);
+count++;
+}
+pthread_mutex_unlock(&mutex);
+sleep(1);
+}
+pthread_exit(NULL);
+}
+void *consumer(void *item){
+long int num = (long int)item;
+while(1) {
+pthread_mutex_lock(&mutex);
+if (count > 0) {
+count--;
+printf(" \n Consumer %ld consumed %d\n", num + 1, buffer[count]);
+}
+pthread_mutex_unlock(&mutex);
+sleep(1);
+}
+pthread_exit(NULL);
+}
+int main()
+{
+pthread_t p[10], c[10];
+pthread_mutex_init(&mutex, NULL);
+unsigned long int i;
+for( i = 0; i < 10; i++) {
+pthread_create(&p[i], NULL, producer, (void *)i);
+}
+for(i = 0; i < 10; i++) {
+pthread_create(&c[i], NULL, consumer, (void *)i);
+}
+for(i = 0; i < 10; i++) {
+pthread_join(p[i], NULL);
+}
+for( i = 0; i < 10; i++) {
+pthread_join(c[i], NULL);
+}
+return 0;
+}
+
+
+
+
+
+
+14. Bankers Algorithm
+Code:
+
+
+#include <stdio.h>
+int main()
+{
+    // P0, P1, P2, P3, P4 are the Process names here
+
+
+    int n, m, i, j, k;
+    n = 0; // Number of processes
+    m = 0; // Number of resources
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+    printf("\nEnter number of resources ");
+    scanf("%d", &m);
+    int max[n][m];
+    int alloc[n][m];
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            alloc[i][j] = 0;
+        }
+    }
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            max[i][j] = 0;
+        }
+    }
+    int avail[m];
+    printf("Enter available resources: \n");
+    for (int i = 0; i < m; i++)
+    {
+        printf("R%d", i + 1);
+        scanf("%d", &avail[i]);
+    }
+    printf("Enter Allocation matrix: \n");
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            scanf("\n%d", &alloc[i][j]);
+        }
+    }
+    printf("Enter Max matrix: \n");
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            scanf("%d", &max[i][j]);
+        }
+    }
+    int f[n], ans[n], ind = 0;
+    for (k = 0; k < n; k++)
+    {
+        f[k] = 0;
+    }
+    int need[n][m];
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < m; j++)
+            need[i][j] = max[i][j] - alloc[i][j];
+    }
+    int y = 0;
+    for (k = 0; k < 5; k++)
+    {
+        for (i = 0; i < n; i++)
+        {
+            if (f[i] == 0)
+            {
+
+
+                int flag = 0;
+                for (j = 0; j < m; j++)
+                {
+                    if (need[i][j] > avail[j])
+                    {
+                        flag = 1;
+                        break;
+                    }
+                }
+
+
+                if (flag == 0)
+                {
+                    ans[ind++] = i;
+                    for (y = 0; y < m; y++)
+                        avail[y] += alloc[i][y];
+                    f[i] = 1;
+                }
+            }
+        }
+    }
+
+
+    int flag = 1;
+
+
+    for (int i = 0; i < n; i++)
+    {
+        if (f[i] == 0)
+        {
+            flag = 0;
+            printf("The following system is not safe");
+            break;
+        }
+    }
+
+
+    if (flag == 1)
+    {
+        printf("Following is the SAFE Sequence\n");
+        for (i = 0; i < n - 1; i++)
+            printf(" P%d ->", ans[i]);
+        printf(" P%d", ans[n - 1]);
+    }
+
+
+    return (0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CPU Scheduling
+FCFS , SJB , PRIORITY , ROUND ROBIN
+
+
+#include <stdio.h>
+#include <conio.h>
+#include <stdlib.h>
+#define MAX 100
+
+
+void fcfs(){
+    int n,a,b;
+    printf("Enter no. of processes: ");
+    scanf("%d",&n);
+    int at[n],bt[n],ct[n],tat[n],wt[n];
+    for(int i=0;i<n;i++){
+        printf("\nEnter arrival time for process %d: ",i+1);
+        scanf("%d",&a);
+        at[i] = a;
+        printf("Enter burst time for process %d: ",i+1);
+        scanf("%d",&b);
+        bt[i] = b;
+    }
+    
+    for(int i=0;i<n;i++){
+        ct[i]=ct[i-1]+bt[i];
+    }
+    
+    for(int i=0;i<n;i++){
+        tat[i]=ct[i]-at[i];
+    }
+    
+    for(int i=0;i<n;i++){
+        wt[i]=tat[i]-bt[i];
+    }
+    
+    printf("AT\t\tBT\t\tTAT\t\tCT\t\tWT");
+    for(int i=0;i<n;i++){
+        printf("\n");
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%d",at[i],bt[i],tat[i],ct[i],wt[i]);
+    }
+}
+void sjf(){
+    int n,a,b;
+    printf("Enter no. of processes: ");
+    scanf("%d",&n);
+    int at[n],bt[n],ct[n],tat[n],wt[n];
+    for(int i=0;i<n;i++){
+        printf("\nEnter arrival time for process %d: ",i+1);
+        scanf("%d",&a);
+        at[i] = a;
+        printf("Enter burst time for process %d: ",i+1);
+        scanf("%d",&b);
+        bt[i] = b;
+    }
+    int temp;
+    for(int i=0; i<n; ++i){
+        for(int j=i+1; j<n; ++j){
+            if(bt[j]<bt[i]){
+                // Swapping burst time
+                int temp = bt[j];
+                bt[j] = bt[i];
+                bt[i] = temp;
+                // Swapping arrival time
+                temp = at[j];
+                at[j] = at[i];
+                at[i] = temp;
+            }
+        }
+        
+    }
+    ct[0] = at[0] + bt[0];
+    tat[0] = ct[0] - at[0];
+    wt[0] = tat[0] - bt[0];
+    
+    for(int i=1;i<n;i++){
+        ct[i] = ct[i-1] + bt[i];
+        tat[i] = ct[i] - at[i];
+        wt[i] = tat[i] - bt[i];
+    }
+    printf("AT\t\tBT\t\tTAT\t\tCT\t\tWT");
+    for(int i=0;i<n;i++){
+        printf("\n");
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%d",at[i],bt[i],tat[i],ct[i],wt[i]);
+    }
+    
+}
+
+
+void priority(){
+    int n,a,b,c;
+    printf("Enter no. of processes: ");
+    scanf("%d",&n);
+    int at[n],bt[n],ct[n],tat[n],wt[n],p[n];
+    for(int i=0;i<n;i++){
+        printf("\nEnter arrival time for process %d: ",i+1);
+        scanf("%d",&a);
+        at[i] = a;
+        printf("Enter burst time for process %d: ",i+1);
+        scanf("%d",&b);
+        bt[i] = b;
+        printf("Enter priority for process %d: ",i+1);
+        scanf("%d",&c);
+        p[i] = c;
+    }
+    int temp;
+    for(int i=0;i<n;i++){
+        for(int j=i+1;j<n;j++){
+            if(p[j]<p[i]){
+                temp=p[j];
+                p[j]=p[i];
+                p[i]=temp;
+                
+                temp=at[j];
+                at[j]=at[i];
+                at[i]=temp;
+                
+                temp=bt[j];
+                bt[j]=bt[i];
+                bt[i]=temp;
+            }
+        }
+    }
+    
+    ct[0]=at[0]+bt[0];
+    tat[0]=ct[0]-at[0];
+    wt[0]=tat[0]-bt[0];
+    
+    for(int i=1;i<n;i++){
+        ct[i]=ct[i-1]+bt[i];
+        tat[i]=ct[i]-at[i];
+        wt[i]=tat[i]-bt[i];
+    }
+    
+    printf("AT\t\tBT\t\tPT\t\tTAT\t\tCT\t\tWT");
+    for(int i=0;i<n;i++){
+        printf("\n");
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d",at[i],bt[i],p[i],tat[i],ct[i],wt[i]);
+    }
+    
+}
+
+
+
+
+void roundrobin(){
+        int n, quantum, i, j;
+    int wt[MAX], tat[MAX], at[MAX], bt[MAX], rt[MAX],ct[MAX];
+    int total_wt = 0, total_tat = 0;
+
+
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+
+    printf("Enter the arrival time and burst time for each process:\n");
+    for (i = 0; i < n; i++) {
+        printf("Process %d: ", i + 1);
+        scanf("%d %d", &at[i], &bt[i]);
+        rt[i] = bt[i];
+    }
+
+
+    printf("Enter time quantum: ");
+    scanf("%d", &quantum);
+
+
+    int time = 0;
+    int done = 0;
+
+
+    while (done != n) {
+        for (i = 0; i < n; i++) {
+            if (rt[i] > 0) {
+                if (rt[i] <= quantum) {
+                    time += rt[i];
+                    tat[i] = time - at[i];
+                    rt[i] = 0;
+                    done++;
+                } else {
+                    time += quantum;
+                    Rt[i] -= quantum;
+                }
+            }
+        }
+    }
+
+
+    for (i = 0; i < n; i++) {
+        wt[i] = tat[i] - bt[i];
+        total_wt += wt[i];
+        total_tat += tat[i];
+        ct[i] = tat[i] + at[i];
+    }
+
+
+   printf("AT\t\tBT\t\tTAT\t\tCT\t\tWT");
+    for(int i=0;i<n;i++){
+        printf("\n");
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%d",at[i],bt[i],tat[i],ct[i],wt[i]);
+    }
+    
+
+
+}
+int main(){
+    fcfs();
+    sjf();
+    priority();
+    roundrobin();
+    return 0;
+}
+
+
+
+
+Page Replacement Algorithms:
+FIFO,LRU:
+
+
+
+
+#include<iostream>
+#include<deque> 
+#include <algorithm>
+#include<vector>
+#include<queue>
+using namespace std;
+
+
+
+
+void fifo(){
+    int n_frames,n_pages,pagefault=0;
+    cout<<"Enter Number of Frames: ";
+    cin>>n_frames;
+    cout<<"Enter Number of Pages: ";
+    cin>>n_pages;
+    
+    vector<int>pages(n_pages);
+    cout<<"Enter references: ";
+    for(int i=0;i<pages.size();i++){
+        cin>>pages[i];
+    }
+    
+    queue<int> frames;
+    
+    bool ispagepresent[n_pages]={false};
+    
+    cout << "Reference String\tFrames\t\tPage Fault\n";
+    cout << "-------------------------------------------------------\n";
+
+
+
+
+    for(int i=0;i<n_pages;i++){
+        cout<<pages[i]<<"\t\t\t";
+        if(!ispagepresent[pages[i]]){
+            if(frames.size()==n_frames){
+                int removed = frames.front();
+                frames.pop();
+                ispagepresent[removed] = false;
+            }
+            frames.push(pages[i]);
+            ispagepresent[pages[i]]=true;
+            
+            for(int j=0;j<frames.size();j++){
+                int temp = frames.front();
+                frames.pop();
+                cout<<temp<<" ";
+                frames.push(temp);
+            }
+            pagefault++;
+            cout<<"\t\tMiss";
+        }
+        else{
+            for(int k=0;k<frames.size();k++){
+                int temp =frames.front();
+                frames.pop();
+                cout<<temp<<" ";
+                frames.push(temp);
+            }
+            cout<<"\t\tHit";
+        }
+        cout<<endl;
+    }
+    cout << "\nNumber of page faults: " << pagefault << endl;
+    
+
+
+    
+}
+
+
+void lru(){
+    int npages,nframes,pagefault=0;
+    cout<<"Enter number of frames: ";
+    cin>>nframes;
+    cout<<"Enter number of pages: ";
+    cin>>npages;
+    
+    vector<int> pages(npages);
+    cout<<"Enter reference: ";
+    for(int i=0;i<npages;i++){
+        cin>>pages[i];
+    }
+    deque<int>frames;
+    bool ispagepresent[npages]={false};
+    
+    cout<<"Reference String\tFrame\t\tPageFault\n";
+    cout<<”-------------------------------------------------------\n";
+    
+    for(int i=0;i<npages;i++){
+        cout<<pages[i]<<"\t\t\t";
+        if(!ispagepresent[pages[i]]){
+            if(frames.size()==nframes){
+                int removed = frames.back();
+                frames.pop_back();
+                ispagepresent[removed]=false;
+            }
+            frames.push_front(pages[i]);
+            ispagepresent[pages[i]]=true;
+            pagefault++;
+            
+            for(int i=0;i<nframes;i++){
+                if(i<frames.size()){
+                    cout<<frames[i]<<" ";
+                }
+                else{
+                    cout<<" ";
+                    
+                }
+            }
+            cout<<"\t\t";
+            cout<<"Fault";
+            cout<<endl;
+            
+        }
+        else{
+            frames.erase(find(frames.begin(),frames.end(),pages[i]));
+            frames.push_front(pages[i]);
+            
+            for(int j=0;j<nframes;j++){
+                if(j<frames.size()){
+                    cout<<frames[j]<<" ";
+                }
+                else{
+                    cout<<" ";
+                }
+            }
+            cout<<"\t\t";
+            cout<<"Hit";
+            cout<<endl;
+            
+        }
+    }
+    cout << "\nNumber of page faults: " << pagefault << endl;
+}
+int main(){
+    fifo();
+    printf("\n");
+   lru();
+    return 0;
+
+
+}
+
+
+Shell for prime
+
+
+read -p "Enter a number:" number
+
+
+d=2
+r=1
+while [[ $d -lt $number && $r -ne 0 ]]
+do
+        r=`expr $n % $d`
+        
+        d=`expr $d + 1`
+done
+
+
+if [[ $r -eq 0 ]]
+    then 
+    echo "$number is not prime"
+else
+        echo "$number is prime"
+fi
+
+
+Shell for substring
+
+
+#!/bin/bash
+echo Enter the original string:
+read str
+echo Enter the substring:
+read sub
+lstr=${#str}
+lsub=${#sub}
+cnt=0
+for((i=0 ; i<=lstr-lsub ; i++))
+do
+        temp=${str:$i:$lsub}
+        if [ "$temp" = "$sub" ]
+        then
+                cnt=$((cnt+1))
+        fi
+done
+echo "SUBSTRING IS $cnt TIMES PRESENT IN STRING"
+
+
+Producer consumer (mutex)
+#include <stdio.h> 
+#include <pthread.h> 
+#include <semaphore.h> 
+#include <stdlib.h> 
+#include <time.h> 
+#include <unistd.h> 
+sem_t empty, full;  
+pthread_mutex_t mutex;  
+int buffer[5];  
+int count = 0;  
+void *producer(void *arg)  
+{  
+ long int num = (long int)arg;  
+ sem_wait(&empty);  
+ pthread_mutex_lock(&mutex);  
+ buffer[count] = rand() % 10;  
+ printf("\n Producer: %ld Produced:%d", num + 1, buffer[count]);   count++;  
+ sleep(1);  
+ pthread_mutex_unlock(&mutex);  
+ sem_post(&full);  
+}  
+void *consumer(void *arg)  
+{  
+ long int num = (long int)arg;  
+ sem_wait(&full);  
+ pthread_mutex_lock(&mutex);  
+ count--;  
+ printf("\n Consumer: %ld Consumed:%d", num + 1, buffer[count]);   sleep(1);  
+ pthread_mutex_unlock(&mutex);  
+ sem_post(&empty);  
+}  
+int main() 
+{  
+ int np, nc;  
+ pthread_t p[10], c[10];  
+ unsigned long int i, j, k, l;  
+ 
+ printf("Enter the number of producers and consumers\n ");  
+ scanf("%d %d", &np, &nc);  
+ sem_init(&empty, 0, 5);  
+ sem_init(&full, 0, 0);  
+ pthread_mutex_init(&mutex, NULL);  
+ for (i = 0; i < np; i++)  
+ {  
+ pthread_create(&p[i], NULL, producer, (void *)i);  
+ }  
+ for (j = 0; j < nc; j++)  
+ {  
+ pthread_create(&c[j], NULL, consumer, (void *)j);  
+ }  
+ for (k = 0; k < np; k++)  
+ pthread_join(p[k], NULL);  
+ for (l = 0; l < nc; l++)  
+ pthread_join(c[l], NULL);  
+ return 0;  
+} 
+
+
+Reader writer (mutex)
+#include<stdio.h> 
+#include<pthread.h> 
+#include<unistd.h> 
+#include<stdlib.h> 
+pthread_mutex_t wr,mutex; 
+int a=10,readcount=0;  
+void *reader(void *arg)  
+{  
+ long int num;  
+ num=(long int)arg;  
+ pthread_mutex_lock(&mutex);  
+ readcount++;  
+ pthread_mutex_unlock(&mutex);  
+ if(readcount==1)  
+ pthread_mutex_lock(&wr);  
+ printf("\n Reader %li is in critical section",num);   printf("\n Reader %li is reading data %d",num,a);   sleep(1);  
+ pthread_mutex_lock(&mutex);  
+ readcount--;  
+ pthread_mutex_unlock(&mutex);  
+ if(readcount==0)  
+ pthread_mutex_unlock(&wr);  
+ printf("\n Reader %li left critical section",num);  
+}  
+void *writer(void *arg)  
+{  
+ long int num;  
+ num=(long int)arg;  
+ pthread_mutex_lock(&wr);  
+ printf("\n Writer %li is in left critical section",num);   printf("\n Writer %li have written data as %d ",num,++a);   sleep(1);  
+ pthread_mutex_unlock(&wr);  
+ printf("\n Writer %li left critical section",num);  }  
+int main()  
+{  
+pthread_t r[10],w[10];  
+long int i,j;  
+int nor,now;  
+ pthread_mutex_init(&wr,NULL);  
+ pthread_mutex_init(&mutex,NULL);  
+printf("Mandar Gatke's code:\n");  
+ printf("Enter number of reader and writers\n");   scanf("%d %d",&nor,&now);  
+ for(i=0;i<nor;i++)  
+ {  
+ pthread_create(&r[i],NULL,reader,(void *)i);   }  
+ for(j=0;j<now;j++)  
+ {  
+ pthread_create(&w[j],NULL,writer,(void *)j);   }  
+ for(i=0;i<nor;i++)  
+ {  
+ pthread_join(r[i],NULL);  
+ }  
+ for(j=0;j<now;j++)  
+ {  
+ pthread_join(w[j],NULL);  
+ }  
+ return 0;  
+} 
+
+
+Dining philosopher
+#include<stdio.h> 
+#include<stdlib.h> 
+#include<pthread.h> 
+#include<semaphore.h> 
+sem_t chopstick[5];  
+void *philos(void *);  
+void eat(int);  
+int main()  
+{  
+ int i,n[5];  
+ pthread_t T[5];  
+ printf("Mandar Gatke's code:\n");  
+ for(i=0;i<5;i++)  
+ {  
+ sem_init(&chopstick[i],0,1);  
+ for(i=0;i<5;i++)  
+ {  
+ n[i]=i;  
+ pthread_create(&T[i],NULL,philos,(void *)&n[i]);  
+ }  
+ for(int i=0;i<5;i++)  
+ {  
+ pthread_join(T[i],NULL);  
+ } 
+ }  
+ return 0;  
+}  
+void *philos(void *n)  
+{  
+ int ph=*(int *)n;  
+ printf("Philosopher %d wants to eat\n",ph);  
+ printf("Philosopher try to pick left chopstick \n",ph);  
+ sem_wait(&chopstick[ph]);  
+ printf("Philosopher %d pick left chopstick \n",ph);  
+ printf("Philosopher try to pick right chopstick \n",ph);  
+ sem_wait(&chopstick[(ph+1)%5]);  
+ printf("Philosopher %d pick right chopstick \n",ph);  
+ eat(ph);  
+ sleep(2);  
+ printf("Philosopher %d has finished eating\n",ph);  
+ sem_post(&chopstick[ph]);  
+ printf("Philosopher %d leaves the chopstick\n",ph);  
+}  
+void eat(int ph)  
+{  
+ printf("Philosopher %d begins to eat \n",ph);  
+}
